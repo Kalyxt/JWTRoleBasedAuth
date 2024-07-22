@@ -1,0 +1,286 @@
+﻿@page "/UserList"
+@inject JWTRoleBasedAuth.Base.AppEngine _AppEngine;
+@inject IDialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject JWTRoleBasedAuth.Services.UserService UserService;
+
+@using JWTRoleBasedAuth;
+@using JWTRoleBasedAuth.Models;
+
+@layout JWTRoleBasedAuth.Layout.MainLayout
+
+<AuthorizeView Context="Auth">
+    <Authorized>
+        @if (isLoading == true)
+        {
+            <div class="centered-component">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudDataGrid Dense="true"
+                         T="JWTRoleBasedAuth.Models.Users.UserModel"
+                         Items="@userList"
+                         Filterable="true"
+                         FilterMode="@_filterModeUsers"
+                         FilterCaseSensitivity="@_caseSensitivityUsers"
+                         SortMode="SortMode.Multiple"
+                         QuickFilter="@_quickFilter">
+
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">User list</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="_searchString" Placeholder="Email, ICO or identificator" Adornment="Adornment.Start" Immediate="true"
+                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+
+                <Columns>
+                    <PropertyColumn Property="x => x.UserName" Title="Email" />
+                    <PropertyColumn Property="x => x.GUID" Title="Identificator" />
+                    <PropertyColumn Property="x => x.DateFormatted" Title="Valid to" />
+                    <PropertyColumn Property="x => x.IdentificationNumber" Title="ICO" />
+                    <PropertyColumn Property="x => x.IsEnabled" Title="Is enabled">
+                        <CellTemplate>
+                            @{
+                                string displayValue = @context.Item.IsEnabled ? "Yes" : "No";
+                            }
+                            @displayValue
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.IsEmailVerified" Title="Verified email">
+                        <CellTemplate>
+                            @{
+                                string displayValue = @context.Item.IsEmailVerified ? "Yes" : "No";
+                            }
+                            @displayValue
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <TemplateColumn Filterable="false">
+                        <CellTemplate>
+                            <MudStack Row style="padding:0px">
+                                <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary" OnClick="@(async () => await EditUser(@context.Item))">Edit</MudButton>
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Filterable="false">
+                        <CellTemplate>
+                            <MudStack Row style="padding:0px">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="@Color.Surface" OnClick="@(async () => await DeleteUser(@context.Item))"></MudIconButton>
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="JWTRoleBasedAuth.Models.Users.UserModel" />
+                </PagerContent>
+            </MudDataGrid>
+        }
+    </Authorized>
+
+    <NotAuthorized Context="notAuth">
+        <h1>Not authorized</h1>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    private bool isLoading = false;
+    private string _searchString = string.Empty;
+    private List<JWTRoleBasedAuth.Models.Users.UserModel> userList = new List<JWTRoleBasedAuth.Models.Users.UserModel>();
+
+    DataGridFilterMode _filterModeUsers = DataGridFilterMode.Simple;
+    DataGridFilterCaseSensitivity _caseSensitivityUsers = DataGridFilterCaseSensitivity.CaseInsensitive;
+
+    // quick filter - filter globally across multiple columns with the same input
+    private Func<JWTRoleBasedAuth.Models.Users.UserModel, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (string.IsNullOrEmpty(x.IdentificationNumber) == false)
+        {
+            if (x.IdentificationNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        if (string.IsNullOrEmpty(x.UserName) == false)
+        {
+            if (x.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        if (string.IsNullOrEmpty(x.GUID) == false)
+        {
+            if (x.GUID.Equals(_searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task EditUser(JWTRoleBasedAuth.Models.Users.UserModel user)
+    {
+        try
+        {
+            if (user == null)
+            {
+                return;
+            }
+
+            var options = new DialogOptions { CloseOnEscapeKey = false, FullWidth = true, BackdropClick = true };
+            var parameters = new DialogParameters();
+            parameters.Add("User", user);
+
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowMessageBox(
+                "Error.",
+                $"{ex.Message}",
+                yesText: "OK");
+        }
+        finally
+        {
+            await LoadUsers();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+
+        this.isLoading = true;
+
+        try
+        {
+            ResultModel<List<JWTRoleBasedAuth.Models.Users.UserModel>> result = await UserService.GetUserList();
+            if (result.result == true)
+            {
+                userList = new List<Models.Users.UserModel>();
+                userList = result.data!;
+            }
+            else
+            {
+                await DialogService.ShowMessageBox(
+                    "Error.",
+                    result.description,
+                    yesText: "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowMessageBox(
+                "Error.",
+                $"{ex.Message}",
+                yesText: "OK");
+        }
+        finally
+        {
+            this.isLoading = false;
+        }
+    }
+
+    private async Task DeleteUser(JWTRoleBasedAuth.Models.Users.UserModel user)
+    {
+        ResultModel<bool> result = new ResultModel<bool>();
+
+        try
+        {
+            if (string.IsNullOrEmpty(user.GUID) == true)
+            {
+                await DialogService.ShowMessageBox(
+                    "Error",
+                    "ID of user is empty.",
+                    yesText: "OK");
+
+                return;
+            }
+
+            // Create msgbox to ask if user want to delete user
+            var resultMsgBox = await DialogService.ShowMessageBox(
+                "Delete user",
+                $"Do you want to delete user '{user.UserName}' ?",
+                yesText: "Yes",
+                cancelText: "No");
+
+            if (resultMsgBox == false || resultMsgBox == null)
+            {
+                return;
+            }
+
+            // result = await UserService.DeleteUser(user.GUID);
+            // if (result.result == false)
+            // {
+            //     await DialogService.ShowMessageBox(
+            //         "Error",
+            //         result.description,
+            //         yesText: "OK");
+
+            //     return;
+            // }
+
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowMessageBox(
+                "Error",
+                $"'{ex.Message}'",
+                yesText: "OK");
+
+            return;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+}
+
+<style>
+    /* Style for the label container */
+    .label-container {
+        display: flex;
+        align-items: center;
+        padding-bottom: 50px;
+        padding-top: 20px;
+    }
+
+    .left-aligned {
+        float: left;
+        margin-right: 10px; /* Optional: Add margin for spacing */
+    }
+
+    .right-aligned {
+        float: right;
+        margin-left: 10px; /* Optional: Add margin for spacing */
+    }
+
+    /* Style for the left text */
+    .left-text {
+        font-weight: bold; /* Adjust font weight as needed */
+    }
+
+    /* Style for the right text */
+    .right-text {
+        color: #555; /* Adjust color as needed */
+    }
+</style>

@@ -1,0 +1,25 @@
+﻿@using JWTRoleBasedAuth
+@inherits LayoutComponentBase
+
+<MudThemeProvider IsDarkMode="true"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<div class="page">
+
+    <div class="sidebar">
+        <JWTRoleBasedAuth.Components.NavMenus.NavMenu/>
+    </div>
+
+    @* @Body *@
+    <div class="industrial-background">
+        @Body
+    </div>
+
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <JWTRoleBasedAuth.Components.AppBars.FooterBar />
+    </div>
+</footer>

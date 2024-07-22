@@ -1,0 +1,63 @@
+﻿@inject NavigationManager NavigationManager;
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        
+        <a class="navbar-brand" href="Dashboard">@UserName</a>
+    </div>
+</div>
+
+<div>
+    <nav class="flex-column">
+        @* Dashboard *@
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Dashboard" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
+            </NavLink>
+        </div>
+
+        <AuthorizeView Roles="Administrator">
+            <Authorized>
+                @* Users *@
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="UserList">
+                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Users
+                    </NavLink>
+                </div>
+            </Authorized>
+
+        </AuthorizeView>
+
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private string UserName = string.Empty;
+    private string Role = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Task.Delay(0);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+}

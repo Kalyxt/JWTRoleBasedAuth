@@ -1,0 +1,91 @@
+﻿@page "/Dashboard"
+@inject JWTRoleBasedAuth.Base.AppEngine _AppEngine;
+@inject IDialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject JWTRoleBasedAuth.Auth.JwtAuthenticationStateProvider JwtAuthenticationStateProvider
+
+@using Microsoft.AspNetCore.Components.Authorization;
+@using System.Globalization;
+@using System.Security.Claims;
+@using System.Text.Json.Nodes;
+@using System.Text;
+@using System.Text.Json;
+@using JWTRoleBasedAuth.Models.Users;
+@using System.IdentityModel.Tokens.Jwt;
+@using JWTRoleBasedAuth;
+
+@layout JWTRoleBasedAuth.Layout.MainLayout
+
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        <h1>Authorized @username</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>Not authorized</h1>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    [CascadingParameter]
+    Task<AuthenticationState> authenticationState { get; set; }
+
+    // private bool isLoading = false;
+    private string username = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tmp_user = await JwtAuthenticationStateProvider.GetUser();
+        username = tmp_user.Email ?? "not entered";
+        string roles = "";
+
+        try
+        {
+            if (authenticationState is not null)
+            {
+                var userIdentity = (ClaimsIdentity)(await authenticationState).User?.Identity;
+                var claims = userIdentity.Claims;
+                roles = claims.Where(x => x.Type == "roles").Select(x => x.Value).Aggregate((prev, next) => $"{prev}; {next}");
+            }
+
+            await base.OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            // isLoading = false;
+        }
+    }
+}
+
+<style>
+    /* Style for the label container */
+    .label-container {
+        display: flex;
+        align-items: center;
+        padding-bottom: 50px;
+    }
+
+    .left-aligned {
+    float: left;
+    margin-right: 10px; /* Optional: Add margin for spacing */
+    }
+
+    .right-aligned {
+    float: right;
+    margin-left: 10px; /* Optional: Add margin for spacing */
+    }
+
+    /* Style for the left text */
+    .left-text {
+        font-weight: bold; /* Adjust font weight as needed */
+    }
+
+    /* Style for the right text */
+    .right-text {
+        color: #555; /* Adjust color as needed */
+    }
+</style>

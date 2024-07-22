@@ -1,0 +1,17 @@
+﻿.background-image {
+    /* Set the background image and style properties */
+    background-image: url('Resources/Images/server-room.jpeg');
+    background-size: cover;
+    background-position: center;
+    /* Other background styles */
+    /* Set width and height to cover the entire page */
+    width: 100vw;
+    height: 100vh;
+}
+
+.registration-form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

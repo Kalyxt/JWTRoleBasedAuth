@@ -1,0 +1,39 @@
+﻿@inject IDialogService DialogService;
+@inject SignInManager<IdentityUser> SignInManager
+@inject NavigationManager NavigationManager;
+
+@using JWTRoleBasedAuth;
+@using Microsoft.AspNetCore.Identity;
+
+<MudAppBar Color="Color.Primary" Fixed="false" Elevation="0">
+    <label>@UserName</label>
+    <MudSpacer />
+    <label>@Role</label>
+    <MudIconButton Icon="@Icons.Custom.Brands.Microsoft" Color="Color.Inherit" />
+</MudAppBar>
+
+@code {
+    private string UserName = string.Empty;
+    private string Role = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            this.UserName = "Hana";
+            this.Role = "Admin";
+
+
+            await Task.Delay(0);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+}

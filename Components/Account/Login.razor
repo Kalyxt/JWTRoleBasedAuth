@@ -1,0 +1,178 @@
+﻿@using Microsoft.AspNetCore.Authentication;
+@using Microsoft.AspNetCore.Identity;
+@using System.ComponentModel.DataAnnotations;
+@using JWTRoleBasedAuth;
+
+@inject IDialogService DialogService;
+@inject ILogger<Login> Logger;
+@inject JWTRoleBasedAuth.Base.AppEngine AppEngine;
+@inject NavigationManager NavigationManager;
+@inject JWTRoleBasedAuth.Auth.BlazorServerLoginService LoginService;
+
+<div class="login-container">
+
+    <h3 class="login-title">Login</h3>
+
+    <form class="login-form" @onsubmit="LoginUser">
+        <div class="form-group">
+
+            <input type="email"
+                   class="login-input"
+                   id="email"
+                   @bind="email"
+                   placeholder="email">
+
+            <input type="password"
+                   class="login-input"
+                   id="password"
+                   @bind="password"
+                   placeholder="password">
+        </div>
+        <button class="login-button">Login</button>
+    </form>
+
+    @if (isLoading == true)
+    {
+        <div class="centered-component">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+</div>
+
+@code {
+    string email = string.Empty;
+    string password = string.Empty;
+
+    string JWTToken = string.Empty;
+    bool isLoading = false;
+    bool loginAsAdmin = true;
+
+    public async Task LoginUser()
+    {
+
+#if DEBUG
+
+if (this.loginAsAdmin == true)
+{
+    email = "dashboard@test.com";
+    password = "a+sdadssadasda12345asdasdadasd6789+";
+
+}
+else
+{
+    email = "client@test.com";
+    password = "a+sdadssadasda12345asdasdadasd6789+";
+}
+
+
+#endif
+        try
+        {
+            // Validation
+            if (string.IsNullOrEmpty(email) == true)
+            {
+                await DialogService.ShowMessageBox(
+                    "Error",
+                    "Email is empty.",
+                    yesText: "OK");
+
+                return;
+            }
+
+            if (string.IsNullOrEmpty(password) == true)
+            {
+                await DialogService.ShowMessageBox(
+                    "Error.",
+                    "Password is empty.",
+                    yesText: "OK");
+
+                return;
+            }
+
+            isLoading = true;
+            JWTRoleBasedAuth.Models.Users.UserLoginModel userLoginModel = 
+                new Models.Users.UserLoginModel(email: email,
+                                                password: password);
+
+            var loginResult = await LoginService.LoginAsync(userLoginModel);
+            if (loginResult.result == true)
+            {
+                NavigationManager.NavigateTo("/Dashboard", true);
+            }
+            else
+            {
+                await DialogService.ShowMessageBox(
+                    "Error.",
+                    loginResult.description,
+                    yesText: "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowMessageBox(
+                "Error.",
+                ex.Message,
+                yesText: "OK");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+
+    }
+}
+
+<style>
+
+    .login-container {
+        max-width: 300px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    .login-title {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .login-label {
+        font-size: 18px;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+
+    .login-input {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        margin-bottom: 15px;
+    }
+
+    .login-button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+        .login-button:hover {
+            background-color: #0056b3;
+        }
+
+
+</style>

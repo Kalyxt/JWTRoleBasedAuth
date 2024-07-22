@@ -1,0 +1,1 @@
+﻿minimum repro for JWT role based authorization in Blazor server app
