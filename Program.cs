@@ -69,8 +69,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Administrator", policy => policy.RequireRole("Administrator"));
-    options.AddPolicy("RequireAdministratorRole", policy => policy.RequireRole("Administrator"));
-    options.AddPolicy("RequireClientRole", policy => policy.RequireRole("Client"));
+    //options.AddPolicy("RequireAdministratorRole", policy => policy.RequireRole("Administrator"));
+    //options.AddPolicy("RequireClientRole", policy => policy.RequireRole("Client"));
 });
 
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();

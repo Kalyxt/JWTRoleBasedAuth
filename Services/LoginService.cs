@@ -93,9 +93,7 @@ namespace JWTRoleBasedAuth.Services
 
                         foreach (var userRole in userRoles)
                         {
-                            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                             authClaims.Add(new Claim("roles", userRole));
-                            authClaims.Add(new Claim(ClaimTypes.GroupSid, userRole));
                         }
 
                         string? JWTToken;
@@ -348,7 +346,7 @@ namespace JWTRoleBasedAuth.Services
                     Subject = new ClaimsIdentity(claims, "jwtAuthType", JwtRegisteredClaimNames.Sub, "roles"),
                     Claims = new Dictionary<string, object>
                     {
-                        { "roles", claims.FirstOrDefault(x => x.Type == "roles")?.Value },
+                        { "roles", claims.FirstOrDefault(x => x.Type == "roles")?.Value! }
                         //{ "role", claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value }
                     },
                 };
