@@ -106,8 +106,10 @@ namespace JWTRoleBasedAuth.Auth
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
 
-                var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType", nameType: "name", roleType: "roles");
+                //var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType", nameType: "name", roleType: "roles");
+                var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType");
                 var user = new ClaimsPrincipal(identity);
+
 
                 var authState = Task.FromResult(new AuthenticationState(user));
                 NotifyAuthenticationStateChanged(authState);

@@ -93,8 +93,9 @@ namespace JWTRoleBasedAuth.Services
 
                         foreach (var userRole in userRoles)
                         {
-                            //authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                             authClaims.Add(new Claim("roles", userRole));
+                            authClaims.Add(new Claim(ClaimTypes.GroupSid, userRole));
                         }
 
                         string? JWTToken;
@@ -345,13 +346,16 @@ namespace JWTRoleBasedAuth.Services
                     Expires = DateTime.UtcNow.AddHours(24),
                     SigningCredentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256),
                     Subject = new ClaimsIdentity(claims),
+                    TokenType = "jwtAuthType",
                     Claims = new Dictionary<string, object>
                     {
-                        { "roles", claims.FirstOrDefault(x => x.Type == "roles")?.Value }
+                        { "roles", claims.FirstOrDefault(x => x.Type == "roles")?.Value },
+                        { "role", claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value }
                     }
                 };
 
                 var tokenHandler = new JwtSecurityTokenHandler();
+
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var encodedToken = tokenHandler.WriteToken(token);
 

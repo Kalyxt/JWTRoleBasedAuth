@@ -94,6 +94,7 @@ else
                 new Models.Users.UserLoginModel(email: email,
                                                 password: password);
 
+            // Login.
             var loginResult = await LoginService.LoginAsync(userLoginModel);
             if (loginResult.result == true)
             {
