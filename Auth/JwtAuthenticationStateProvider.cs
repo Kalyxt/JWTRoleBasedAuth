@@ -106,8 +106,8 @@ namespace JWTRoleBasedAuth.Auth
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
 
-                //var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType", nameType: "name", roleType: "roles");
-                var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType");
+                var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType", nameType: "name", roleType: "roles");
+                //var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType");
                 var user = new ClaimsPrincipal(identity);
 
 
@@ -169,11 +169,11 @@ namespace JWTRoleBasedAuth.Auth
                     JwtSecurityToken jwtSecurityToken = tokenHandler.ReadJwtToken(jwtToken);
 
                     // Create ClaimsIdentity
-                    ClaimsIdentity claimsIdentity = new ClaimsIdentity(jwtSecurityToken.Claims, "JwtAuth");
+                    ClaimsIdentity claimsIdentity = new ClaimsIdentity(jwtSecurityToken.Claims, "JwtAuthType", nameType: "name", roleType: "roles");
 
                     // Create ClaimsPrincipal
                     principal = new ClaimsPrincipal(claimsIdentity);
-
+                    
                 }
                 catch (Exception ex)
                 {

@@ -345,16 +345,16 @@ namespace JWTRoleBasedAuth.Services
                     Audience = _configuration["Jwt:Audience"],
                     Expires = DateTime.UtcNow.AddHours(24),
                     SigningCredentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256),
-                    Subject = new ClaimsIdentity(claims),
-                    TokenType = "jwtAuthType",
+                    Subject = new ClaimsIdentity(claims, "jwtAuthType", JwtRegisteredClaimNames.Sub, "roles"),
                     Claims = new Dictionary<string, object>
                     {
                         { "roles", claims.FirstOrDefault(x => x.Type == "roles")?.Value },
-                        { "role", claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value }
-                    }
+                        //{ "role", claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value }
+                    },
                 };
 
                 var tokenHandler = new JwtSecurityTokenHandler();
+                //tokenHandler.MapInboundClaims = false;
 
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var encodedToken = tokenHandler.WriteToken(token);
